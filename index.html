@@ -10,9 +10,11 @@
 <body>
     <input type="text" id="actressName" placeholder="Nhập tên nữ diễn viên">
     <button id="saveButton">Lưu</button>
-    <input type="text" id="weburl" placeholder="Nhập đường dẫn bạn mong muốn">
-
+    <input type="text" id="weburl" placeholder="Nhập đường dẫn bạn mong muốn" value="https://javtiful.com/actress/">
     <button id="openPagesButton">Mở trang</button>
+
+
+    <div id="actressList"></div> <!-- Thêm một phần tử để chứa danh sách nữ diễn viên -->
 
     <script>
         // Lắng nghe sự kiện click trên nút "Lưu"
@@ -33,7 +35,10 @@
                 })
             })
                 .then(response => response.json())
-                .then(data => console.log("Dữ liệu đã được lưu lên API:", data))
+                .then(data => {
+                    console.log("Dữ liệu đã được lưu lên API:", data);
+                    location.reload(); // Reload lại trang sau khi lưu dữ liệu
+                })
                 .catch(error => console.error("Lỗi khi lưu dữ liệu:", error));
         }
 
@@ -59,6 +64,39 @@
         function openPage(url) {
             window.open(url, "_blank"); // Mở trang web trong cửa sổ mới
         }
+
+        // Hàm để xóa một nữ diễn viên
+        function deleteActress(id) {
+            fetch(`https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress/${id}`, {
+                method: 'DELETE',
+            })
+                .then(response => response.json())
+                .then(data => console.log("Đã xóa:", data))
+                .catch(error => console.error("Lỗi khi xóa:", error));
+        }
+
+        // Lắng nghe sự kiện khi tài liệu đã được tải
+        document.addEventListener("DOMContentLoaded", function () {
+            // Lấy dữ liệu từ API và hiển thị tên nữ diễn viên
+            fetch("https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress")
+                .then(response => response.json())
+                .then(data => {
+                    var actressList = document.getElementById("actressList");
+                    data.forEach(actress => {
+                        var listItem = document.createElement('div');
+                        listItem.textContent = actress.name;
+                        var deleteButton = document.createElement('button');
+                        deleteButton.textContent = "Xóa";
+                        deleteButton.addEventListener('click', function () {
+                            deleteActress(actress.id);
+                            listItem.remove(); // Xóa phần tử div hiện tại khi nhấn nút xóa
+                        });
+                        listItem.appendChild(deleteButton);
+                        actressList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error("Lỗi khi lấy dữ liệu từ API:", error));
+        });
     </script>
 
 </body>
