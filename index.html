@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Open Pages</title>
+</head>
+
+<body>
+    <input type="text" id="actressName" placeholder="Nhập tên nữ diễn viên">
+    <button id="saveButton">Lưu</button>
+    <input type="text" id="weburl" placeholder="Nhập đường dẫn bạn mong muốn">
+
+    <button id="openPagesButton">Mở trang</button>
+
+    <script>
+        // Lắng nghe sự kiện click trên nút "Lưu"
+        document.getElementById("saveButton").addEventListener("click", function () {
+            var actressName = document.getElementById("actressName").value;
+            saveToApi(actressName);
+        });
+
+        // Hàm để lưu dữ liệu lên API
+        function saveToApi(name) {
+            fetch("https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: name
+                })
+            })
+                .then(response => response.json())
+                .then(data => console.log("Dữ liệu đã được lưu lên API:", data))
+                .catch(error => console.error("Lỗi khi lưu dữ liệu:", error));
+        }
+
+        // Lắng nghe sự kiện click trên nút "Mở trang"
+        document.getElementById("openPagesButton").addEventListener("click", function () {
+            var url = document.getElementById("weburl").value;
+            // Lấy dữ liệu từ API và mở từng trang web
+            fetch("https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress")
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(actress => {
+
+                        openPage(document.getElementById("weburl").value + actress.name);
+                    });
+                })
+                .catch(error => console.error("Lỗi khi lấy dữ liệu từ API:", error));
+        });
+
+        // Hàm để mở một trang web mới
+        function openPage(url) {
+            window.open(url, "_blank"); // Mở trang web trong cửa sổ mới
+        }
+    </script>
+
+</body>
+
+</html>
