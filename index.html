@@ -45,8 +45,9 @@
                 .then(response => response.json())
                 .then(data => {
                     data.forEach(actress => {
-
-                        openPage(document.getElementById("weburl").value + actress.name);
+                        // Chuyển đổi tên nữ diễn viên thành đường dẫn hợp lệ
+                        var actressName = actress.name.replace(/\s+/g, '_'); // Thay thế khoảng trắng bằng dấu gạch dưới
+                        openPage(url + actressName);
                     });
                 })
                 .catch(error => console.error("Lỗi khi lấy dữ liệu từ API:", error));
