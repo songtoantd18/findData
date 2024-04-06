@@ -10,8 +10,15 @@
 <body>
     <input type="text" id="actressName" placeholder="Nhập tên nữ diễn viên">
     <button id="saveButton">Lưu</button>
-    <input type="text" id="weburl" placeholder="Nhập đường dẫn bạn mong muốn" value="https://javtiful.com/actress/">
-    <button id="openPagesButton">Mở trang</button>
+    <input type="text" id="weburl" placeholder="Nhập đường dẫn bạn mong muốn" value="https://24h.com/s">
+    <button id="openPagesButton">Mở trang tổng</button>
+    <button id="openPagesButton1">Mở trang1</button>
+
+    <button id="openPagesButton2">Mở trang2</button>
+
+    <button id="openPagesButton3">Mở trang3</button>
+
+
 
 
     <div id="actressList"></div> <!-- Thêm một phần tử để chứa danh sách nữ diễn viên -->
@@ -42,30 +49,7 @@
                 .catch(error => console.error("Lỗi khi lưu dữ liệu:", error));
         }
 
-        // Lắng nghe sự kiện click trên nút "Mở trang"
-        document.getElementById("openPagesButton").addEventListener("click", function () {
-            var url = document.getElementById("weburl").value;
-            // Lấy dữ liệu từ API và mở từng trang web
-            fetch("https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress")
-                .then(response => response.json())
-                .then(data => {
-                    data.forEach(actress => {
-                        // Chuyển đổi tên nữ diễn viên thành đường dẫn hợp lệ
-                        var actressName = actress.name.replace(/\s+/g, '-'); // Thay thế khoảng trắng bằng dấu gạch dưới
-                        openPage(url + actressName);
-                        console.log('-------------------------------')
-                        console.log(url + actressName);
-                    });
-                })
-                .catch(error => console.error("Lỗi khi lấy dữ liệu từ API:", error));
-        });
 
-        // Hàm để mở một trang web mới
-        function openPage(url) {
-            window.open(url, "_blank"); // Mở trang web trong cửa sổ mới
-        }
-
-        // Hàm để xóa một nữ diễn viên
         function deleteActress(id) {
             fetch(`https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress/${id}`, {
                 method: 'DELETE',
@@ -82,9 +66,10 @@
                 .then(response => response.json())
                 .then(data => {
                     var actressList = document.getElementById("actressList");
-                    data.forEach(actress => {
+                    data.forEach((actress, index) => { // Thêm index vào forEach
                         var listItem = document.createElement('div');
-                        listItem.textContent = actress.name;
+                        var actressIndex = index + 1; // Chỉ số bắt đầu từ 1
+                        listItem.textContent = actressIndex + ". " + actress.name + "  đây là id" + actress.id; // Hiển thị chỉ số và tên nữ diễn viên
                         var deleteButton = document.createElement('button');
                         deleteButton.textContent = "Xóa";
                         deleteButton.addEventListener('click', function () {
@@ -94,9 +79,51 @@
                         listItem.appendChild(deleteButton);
                         actressList.appendChild(listItem);
                     });
+                    console.log('Math.ceil(data.length / 3):', Math.ceil(data.length / 3));
+                    console.log('Math.ceil(data.length / 1.5):', Math.ceil(data.length / 1.5));
+                    document.getElementById("openPagesButton1").addEventListener("click", function () {
+                        openPages(1, Math.ceil(data.length / 3)); // Mở trang từ 1 đến 17
+                    });
+
+                    // Lắng nghe sự kiện click trên nút "Mở trang 2"
+                    document.getElementById("openPagesButton2").addEventListener("click", function () {
+                        openPages(Math.ceil(data.length / 3) + 1, Math.ceil(data.length / 1.5)); // Mở trang từ 18 đến 34
+                    });
+
+                    // Lắng nghe sự kiện click trên nút "Mở trang 3"
+                    document.getElementById("openPagesButton3").addEventListener("click", function () {
+                        openPages(Math.ceil(data.length / 1.5) + 1, data.length); // Mở trang từ 35 đến 51
+                    });
+                    document.getElementById("openPagesButton").addEventListener("click", function () {
+                        openPages(1, data.length); // Mở trang từ 35 đến 51
+                    });
+                    function openPages(startIndex, endIndex) {
+                        console.log(`dữ liệu từ ${startIndex} đến ${endIndex}   `)
+                        console.log("🚀 ~ openPages ~ startIndex:", startIndex)
+                        console.log("🚀 ~ openPages ~ endIndex:", endIndex)
+
+                        var url = document.getElementById("weburl").value;
+                        fetch("https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress")
+                            .then(response => response.json())
+                            .then(data => {
+                                data.slice(startIndex - 1, endIndex).forEach(actress => {
+                                    var actressName = actress.name.replace(/\s+/g, '-');
+                                    console.log("🚀 ~ data.slice ~ actressName:", actressName)
+                                    openPage(url + actressName);
+                                });
+                            })
+                            .catch(error => console.error("Lỗi khi lấy dữ liệu từ API:", error));
+                    }
+
+                    // Hàm để mở một trang web mới
+                    function openPage(url) {
+                        window.open(url, "_blank"); // Mở trang web trong cửa sổ mới
+                    }
+
                 })
                 .catch(error => console.error("Lỗi khi lấy dữ liệu từ API:", error));
-        });
+        }
+        );
     </script>
 
 </body>
