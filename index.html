@@ -10,7 +10,7 @@
 <body>
     <input type="text" id="actressName" placeholder="Nhập tên nữ diễn viên">
     <button id="saveButton">Lưu</button>
-    <input type="text" id="weburl" placeholder="Nhập đường dẫn bạn mong muốn" value="https://24h.com/s">
+    <input type="text" id="weburl" placeholder="Nhập đường dẫn bạn mong muốn" value="https://javtiful.com/actress/">
     <button id="openPagesButton">Mở trang tổng</button>
     <button id="openPagesButton1">Mở trang1</button>
 
@@ -69,7 +69,7 @@
                     data.forEach((actress, index) => { // Thêm index vào forEach
                         var listItem = document.createElement('div');
                         var actressIndex = index + 1; // Chỉ số bắt đầu từ 1
-                        listItem.textContent = actressIndex + ". " + actress.name + "  đây là id" + actress.id; // Hiển thị chỉ số và tên nữ diễn viên
+                        listItem.textContent = actressIndex + ". " + actress.name; // Hiển thị chỉ số và tên nữ diễn viên
                         var deleteButton = document.createElement('button');
                         deleteButton.textContent = "Xóa";
                         deleteButton.addEventListener('click', function () {
