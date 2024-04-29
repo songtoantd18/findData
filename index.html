@@ -17,6 +17,9 @@
     <button id="openPagesButton2">Mở trang2</button>
 
     <button id="openPagesButton3">Mở trang3</button>
+    <button id="refresh">refresh</button>
+
+
 
 
 
@@ -24,6 +27,43 @@
     <div id="actressList"></div> <!-- Thêm một phần tử để chứa danh sách nữ diễn viên -->
 
     <script>
+        document.getElementById("refresh").addEventListener("click", function () {
+            fetch("https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress")
+                .then(response => response.json())
+                .then(data => {
+                    console.log("🚀 ~ data:", data);
+
+                    let existingNames = {};
+
+                    for (let item of data) {
+                        let nameLowerCase = item.name.toLowerCase();
+                        if (!existingNames[nameLowerCase]) {
+                            existingNames[nameLowerCase] = true;
+                        } else {
+                            // Xóa dữ liệu trùng lặp từ API
+                            fetch(`https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress/${item.id}`, {
+                                method: 'DELETE'
+                            })
+                                .then(response => {
+                                    if (response.ok) {
+                                        console.log(`Đã xóa dữ liệu trùng lặp với ID ${item.id} thành công.`);
+                                        location.reload();
+                                    } else {
+                                        throw new Error(`Không thể xóa dữ liệu trùng lặp với ID ${item.id}.`);
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Đã xảy ra lỗi:', error);
+                                });
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Đã xảy ra lỗi khi tải dữ liệu:', error);
+                });
+        });
+
+
         // Lắng nghe sự kiện click trên nút "Lưu"
         document.getElementById("saveButton").addEventListener("click", function () {
             var actressName = document.getElementById("actressName").value;
