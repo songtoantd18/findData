@@ -71,12 +71,25 @@
                         var actressIndex = index + 1; // Chỉ số bắt đầu từ 1
                         listItem.textContent = actressIndex + ". " + actress.name; // Hiển thị chỉ số và tên nữ diễn viên
                         var deleteButton = document.createElement('button');
+                        var searchValue = document.createElement('button');
+                        searchValue.textContent = "search";
+
                         deleteButton.textContent = "Xóa";
                         deleteButton.addEventListener('click', function () {
                             deleteActress(actress.id);
                             listItem.remove(); // Xóa phần tử div hiện tại khi nhấn nút xóa
                         });
+                        searchValue.addEventListener('click', function () {
+                            var url = document.getElementById("weburl").value;
+
+                            console.log('1111111111111')
+                            console.log('actress.name:', actress.name);
+                            var actressName = actress.name.replace(/\s+/g, '-');
+                            console.log("🚀 ~ url:", url)
+                            openPage(url + actressName)
+                        })
                         listItem.appendChild(deleteButton);
+                        listItem.appendChild(searchValue);
                         actressList.appendChild(listItem);
                     });
                     console.log('Math.ceil(data.length / 3):', Math.ceil(data.length / 3));
