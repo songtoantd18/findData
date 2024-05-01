@@ -11,6 +11,7 @@
             border: 1px solid red;
             /* Thêm đường viền với màu và độ dày mong muốn */
             border-radius: 5px;
+            font-size: 35px;
         }
     </style>
 </head>
@@ -73,6 +74,13 @@
                 pointSpan.textContent = actress.point;
                 pointSpan.classList.add("redPoint");
                 searchValue.textContent = "search1";
+                editButton.addEventListener('click', async function () {
+                    console.log("🚀 ~ editButton.addEventListener ~ actress:", actress);
+                    console.log("🚀 ~ editButton.addEventListener ~ actress.id:", actress.id);
+
+                    // Gọi hàm để cập nhật điểm của diễn viên
+                    await updateActressPoint(actress);
+                });
 
                 deleteButton.textContent = "Xóa1";
                 deleteButton.addEventListener('click', function () {
@@ -181,7 +189,6 @@
                 .then(data => {
                     var actressList = document.getElementById("actressList");
                     data.forEach((actress, index) => { // Thêm index vào forEach
-                        console.log("🚀 ~ data.forEach ~ actress:", actress)
                         var listItem = document.createElement('div');
 
                         var actressIndex = index + 1; // Chỉ số bắt đầu từ 1
@@ -194,7 +201,21 @@
                         listItem.appendChild(pointSpan);
                         searchValue.textContent = "search";
 
-                        deleteButton.textContent = "Xóa";
+                        deleteButton.textContent = "Xóa2";
+                        var editButton = document.createElement('button'); // Tạo nút "Edit" mới
+                        listItem.appendChild(editButton); // Thêm nút "Edit" vào mỗi mục danh sách
+                        editButton.textContent = "Edit2"; // Đặt văn bản cho nút "Edit"
+
+                        editButton.addEventListener('click', async function () {
+                            console.log("🚀 ~ editButton.addEventListener ~ actress:", actress);
+                            console.log("🚀 ~ editButton.addEventListener ~ actress.id:", actress.id);
+
+                            // Gọi hàm để cập nhật điểm của diễn viên
+                            await updateActressPoint(actress);
+                        });
+
+
+
                         deleteButton.addEventListener('click', function () {
                             deleteActress(actress.id);
                             listItem.remove(); // Xóa phần tử div hiện tại khi nhấn nút xóa
@@ -212,6 +233,46 @@
                         listItem.appendChild(searchValue);
                         actressList.appendChild(listItem);
                     });
+                    // Hàm để cập nhật điểm của diễn viên thông qua API
+                    async function updateActressPoint(actress) {
+                        // Prompt người dùng để nhập dữ liệu mới cho điểm
+                        const newPoint = prompt(`Chỉnh lại điểm Point của actress: ${actress.point}`);
+
+                        // Kiểm tra xem người dùng đã nhập dữ liệu mới hay không và xác nhận thực hiện cập nhật
+                        if (newPoint !== null) {
+                            try {
+                                // Gửi yêu cầu PUT đến API để cập nhật dữ liệu
+                                const response = await fetch(`https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress/${actress.id}`, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ point: newPoint })
+                                });
+
+                                // Kiểm tra xem yêu cầu đã thành công hay không
+                                if (response.ok) {
+                                    console.log('Dữ liệu đã được cập nhật thành công.');
+                                    location.reload();
+                                    // Cập nhật dữ liệu trên giao diện nếu cần thiết
+                                } else {
+                                    console.error('Lỗi khi cập nhật dữ liệu:', response.statusText);
+                                }
+                            } catch (error) {
+                                console.error('Lỗi:', error.message);
+                            }
+                        }
+                    }
+
+                    // Sử dụng hàm để cập nhật điểm của diễn viên khi nút chỉnh sửa được nhấn
+                    // editButton.addEventListener('click', async function () {
+                    //     console.log("🚀 ~ editButton.addEventListener ~ actress:", actress);
+                    //     console.log("🚀 ~ editButton.addEventListener ~ actress.id:", actress.id);
+
+                    //     // Gọi hàm để cập nhật điểm của diễn viên
+                    //     await updateActressPoint(actress);
+                    // });
+
                     console.log('Math.ceil(data.length / 3):', Math.ceil(data.length / 3));
                     console.log('Math.ceil(data.length / 1.5):', Math.ceil(data.length / 1.5));
                     document.getElementById("openPagesButton1").addEventListener("click", function () {

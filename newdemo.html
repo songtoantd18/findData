@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Item</title>
+    <style>
+        .container {
+            width: 400px;
+            margin: 50px auto;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Edit Item</h2>
+        <form id="edit-form">
+            <input type="hidden" id="item-id">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description"></textarea>
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('edit-form');
+            const itemIdInput = document.getElementById('item-id');
+            const nameInput = document.getElementById('name');
+            const descriptionInput = document.getElementById('description');
+
+            // Lấy thông tin của mục cần chỉnh sửa từ API
+            const itemId = '1';
+            const API_URL = 'https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress'
+            fetch(`${API_URL}/${itemId}`)
+                .then(response => response.json())
+                .then(data => {
+                    itemIdInput.value = data.id;
+                    nameInput.value = data.name;
+                    descriptionInput.value = data.description;
+                })
+                .catch(error => console.error('Error fetching item:', error));
+
+            // Xử lý sự kiện khi form được submit
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                const updatedItem = {
+                    id: formData.get('id'),
+                    name: formData.get('name'),
+                    description: formData.get('description')
+                };
+
+                // Gửi request cập nhật thông tin mục
+                fetch(`${API_URL}${updatedItem.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedItem)
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Item updated successfully:', data);
+                        // Redirect hoặc thông báo thành công tùy theo yêu cầu
+                    })
+                    .catch(error => console.error('Error updating item:', error));
+            });
+        });
+    </script>
+</body>
+
+</html>
