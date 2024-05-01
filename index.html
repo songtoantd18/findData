@@ -5,10 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Open Pages</title>
+    <style>
+        .redPoint {
+            color: red;
+            border: 1px solid red;
+            /* Thêm đường viền với màu và độ dày mong muốn */
+            border-radius: 5px;
+        }
+    </style>
 </head>
 
 <body>
     <input type="text" id="actressName" placeholder="Nhập tên nữ diễn viên">
+    <input type="number" id="point" placeholder="điểm" min="1" max="10">
+
     <button id="saveButton">Lưu</button>
     <input type="text" id="weburl" placeholder="Nhập đường dẫn bạn mong muốn" value="https://javtiful.com/actress/">
     <button id="openPagesButton">Mở trang tổng</button>
@@ -18,6 +28,9 @@
 
     <button id="openPagesButton3">Mở trang3</button>
     <button id="refresh">refresh</button>
+    <button id="sort">sort</button>
+
+
 
 
 
@@ -27,6 +40,64 @@
     <div id="actressList"></div> <!-- Thêm một phần tử để chứa danh sách nữ diễn viên -->
 
     <script>
+        function openPage(url) {
+            window.open(url, "_blank"); // Mở trang web trong cửa sổ mới
+        }
+        document.getElementById("sort").addEventListener("click", function () {
+            sortActressesByPoint();
+        });
+
+        function sortActressesByPoint() {
+            fetch("https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress")
+                .then(response => response.json())
+                .then(data => {
+                    data.sort((a, b) => b.point - a.point); // Sắp xếp theo điểm giảm dần
+                    updateActressList(data); // Cập nhật danh sách sau khi đã sắp xếp
+                })
+                .catch(error => console.error("Lỗi khi lấy dữ liệu từ API:", error));
+        }
+
+        function updateActressList(data) {
+            var actressList = document.getElementById("actressList");
+            actressList.innerHTML = ""; // Xóa danh sách hiện tại
+            data.forEach((actress, index) => {
+                var listItem = document.createElement('div');
+                var actressIndex = index + 1;
+                listItem.textContent = actressIndex + ". " + actress.name;
+                var deleteButton = document.createElement('button');
+                var searchValue = document.createElement('button');
+                var pointSpan = document.createElement("span");
+                var editButton = document.createElement('button'); // Tạo nút "Edit" mới
+                listItem.appendChild(editButton); // Thêm nút "Edit" vào mỗi mục danh sách
+                editButton.textContent = "Edit1"; // Đặt văn bản cho nút "Edit"
+                pointSpan.textContent = actress.point;
+                pointSpan.classList.add("redPoint");
+                searchValue.textContent = "search1";
+
+                deleteButton.textContent = "Xóa1";
+                deleteButton.addEventListener('click', function () {
+                    deleteActress(actress.id);
+                    listItem.remove();
+                });
+
+                editButton.addEventListener('click', function () { })
+
+
+
+                searchValue.addEventListener('click', function () {
+                    var url = document.getElementById("weburl").value;
+                    var actressName = actress.name.replace(/\s+/g, '-');
+                    openPage(url + actressName)
+                });
+                listItem.appendChild(deleteButton);
+                listItem.appendChild(searchValue);
+                listItem.appendChild(pointSpan);
+                actressList.appendChild(listItem);
+            });
+        }
+
+
+
         document.getElementById("refresh").addEventListener("click", function () {
             fetch("https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress")
                 .then(response => response.json())
@@ -67,18 +138,21 @@
         // Lắng nghe sự kiện click trên nút "Lưu"
         document.getElementById("saveButton").addEventListener("click", function () {
             var actressName = document.getElementById("actressName").value;
-            saveToApi(actressName);
+            var actressPoint = document.getElementById("point").value;
+
+            saveToApi(actressName, actressPoint);
         });
 
         // Hàm để lưu dữ liệu lên API
-        function saveToApi(name) {
+        function saveToApi(name, point) {
             fetch("https://62fbae6be4bcaf53518af2ed.mockapi.io/api/actress", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    name: name
+                    name: name,
+                    point: point
                 })
             })
                 .then(response => response.json())
@@ -107,11 +181,17 @@
                 .then(data => {
                     var actressList = document.getElementById("actressList");
                     data.forEach((actress, index) => { // Thêm index vào forEach
+                        console.log("🚀 ~ data.forEach ~ actress:", actress)
                         var listItem = document.createElement('div');
+
                         var actressIndex = index + 1; // Chỉ số bắt đầu từ 1
                         listItem.textContent = actressIndex + ". " + actress.name; // Hiển thị chỉ số và tên nữ diễn viên
                         var deleteButton = document.createElement('button');
                         var searchValue = document.createElement('button');
+                        var pointSpan = document.createElement("span");
+                        pointSpan.textContent = actress.point;
+                        pointSpan.classList.add("redPoint"); // Thêm class để áp dụng CSS
+                        listItem.appendChild(pointSpan);
                         searchValue.textContent = "search";
 
                         deleteButton.textContent = "Xóa";
@@ -169,9 +249,9 @@
                     }
 
                     // Hàm để mở một trang web mới
-                    function openPage(url) {
-                        window.open(url, "_blank"); // Mở trang web trong cửa sổ mới
-                    }
+                    // function openPage(url) {
+                    //     window.open(url, "_blank"); // Mở trang web trong cửa sổ mới
+                    // }
 
                 })
                 .catch(error => console.error("Lỗi khi lấy dữ liệu từ API:", error));
