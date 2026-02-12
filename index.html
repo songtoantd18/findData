@@ -99,6 +99,7 @@
                     <th>STT</th>
                     <th>Tên</th>
                     <th>Điểm</th>
+                    <th>Lượt xem</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -300,6 +301,7 @@
                 await newActressRef.set({
                     name: name,
                     point: point,
+                    count: 0,
                     createdAt: new Date().toISOString()
                 });
 
@@ -354,6 +356,24 @@
                     console.error('❌ Lỗi khi cập nhật:', error);
                     alert('Lỗi khi cập nhật: ' + error.message);
                 }
+            }
+        }
+
+        // INCREMENT COUNT
+        async function incrementSearchCount(actress) {
+            if (!isAuthenticated) return;
+
+            const currentCount = actress.count || 0;
+            const newCount = currentCount + 1;
+
+            try {
+                await database.ref(`actresses/${actress.firebaseId}`).update({
+                    count: newCount
+                });
+                console.log(`✅ Đã tăng lượt xem cho ${actress.name} lên ${newCount}`);
+                loadAllData();
+            } catch (error) {
+                console.error('❌ Lỗi khi tăng lượt xem:', error);
             }
         }
 
@@ -478,7 +498,7 @@
             actressList.innerHTML = "";
 
             if (data.length === 0) {
-                actressList.innerHTML = '<tr><td colspan="4" class="text-center">Chưa có dữ liệu</td></tr>';
+                actressList.innerHTML = '<tr><td colspan="5" class="text-center">Chưa có dữ liệu</td></tr>';
                 return;
             }
 
@@ -486,10 +506,13 @@
                 var row = document.createElement('tr');
                 var actressIndex = index + 1;
 
+                var viewCount = actress.count || 0;
+
                 row.innerHTML = `
                     <td>${actressIndex}</td>
-                    <td>${actress.point}</td>
+                    <td>${actress.name}</td>
                     <td><span class="redPoint">${actress.point}</span></td>
+                    <td><strong>${viewCount}</strong></td>
                     <td>
                         <button class="btn btn-sm btn-primary edit-btn">Edit</button>
                         <button class="btn btn-sm btn-danger delete-btn">Xóa</button>
@@ -506,6 +529,7 @@
                 });
 
                 row.querySelector('.search-btn').addEventListener('click', function () {
+                    incrementSearchCount(actress);
                     var url = document.getElementById("weburl").value;
                     var actressName = actress.name.replace(/\s+/g, '-');
                     openPage(url + actressName);
