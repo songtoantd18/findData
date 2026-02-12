@@ -35,6 +35,35 @@
             margin-bottom: 20px;
             border: 2px dashed #6c757d;
         }
+
+        /* Sortable table headers */
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: background-color 0.2s ease;
+        }
+
+        th.sortable:hover {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        th.sortable::after {
+            content: ' ⇅';
+            opacity: 0.5;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+
+        th.sort-asc::after {
+            content: ' ▲';
+            opacity: 1;
+        }
+
+        th.sort-desc::after {
+            content: ' ▼';
+            opacity: 1;
+        }
     </style>
 </head>
 
@@ -97,9 +126,10 @@
             <thead>
                 <tr>
                     <th>STT</th>
-                    <th>Tên</th>
-                    <th>Điểm</th>
-                    <th>Lượt xem</th>
+                    <th class="sortable" data-column="name">Tên</th>
+                    <th class="sortable" data-column="point">Điểm</th>
+                    <th class="sortable" data-column="count">Lượt xem</th>
+                    <th class="sortable" data-column="date">Created Date</th>
                     <th>Hành động</th>
                 </tr>
             </thead>
@@ -148,8 +178,12 @@
         let sortState = {
             point: 'desc',  // 'desc' = high to low, 'asc' = low to high
             name: 'asc',    // 'asc' = A to Z, 'desc' = Z to A
-            date: 'desc'    // 'desc' = newest first, 'asc' = oldest first
+            date: 'desc',   // 'desc' = newest first, 'asc' = oldest first
+            count: 'desc'   // 'desc' = high to low, 'asc' = low to high
         };
+
+        // Current active sort column
+        let currentSortColumn = null;
 
         // ========== AUTHENTICATION ==========
         function enableUI() {
@@ -498,7 +532,7 @@
             actressList.innerHTML = "";
 
             if (data.length === 0) {
-                actressList.innerHTML = '<tr><td colspan="5" class="text-center">Chưa có dữ liệu</td></tr>';
+                actressList.innerHTML = '<tr><td colspan="6" class="text-center">Chưa có dữ liệu</td></tr>';
                 return;
             }
 
@@ -508,11 +542,25 @@
 
                 var viewCount = actress.count || 0;
 
+                // Format created date
+                var createdDate = 'N/A';
+                if (actress.createdAt) {
+                    const date = new Date(actress.createdAt);
+                    createdDate = date.toLocaleDateString('vi-VN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                }
+
                 row.innerHTML = `
                     <td>${actressIndex}</td>
                     <td>${actress.name}</td>
                     <td><span class="redPoint">${actress.point}</span></td>
                     <td><strong>${viewCount}</strong></td>
+                    <td><small>${createdDate}</small></td>
                     <td>
                         <button class="btn btn-sm btn-primary edit-btn">Edit</button>
                         <button class="btn btn-sm btn-danger delete-btn">Xóa</button>
@@ -589,6 +637,9 @@
             // Update button text
             button.textContent = sortState.point === 'desc' ? 'Sort by Point ↓' : 'Sort by Point ↑';
 
+            // Update header class
+            updateHeaderSortClass('point', sortState.point);
+
             updateActressList(sortedData);
         }
 
@@ -608,6 +659,9 @@
 
             // Update button text
             button.textContent = sortState.name === 'asc' ? 'Sort by Name ↑' : 'Sort by Name ↓';
+
+            // Update header class
+            updateHeaderSortClass('name', sortState.name);
 
             updateActressList(sortedData);
         }
@@ -632,6 +686,9 @@
             // Update button text
             button.textContent = sortState.date === 'desc' ? 'Sort by Date ↓' : 'Sort by Date ↑';
 
+            // Update header class
+            updateHeaderSortClass('date', sortState.date);
+
             updateActressList(sortedData);
         }
 
@@ -642,6 +699,62 @@
                 [dataValue[i], dataValue[j]] = [dataValue[j], dataValue[i]];
             }
             updateActressList(dataValue);
+        }
+
+        // Sort by count (views)
+        function sortActressesByCount() {
+            // Toggle state
+            sortState.count = sortState.count === 'desc' ? 'asc' : 'desc';
+
+            const sortedData = [...dataValue].sort((a, b) => {
+                const countA = a.count || 0;
+                const countB = b.count || 0;
+
+                if (sortState.count === 'desc') {
+                    return countB - countA; // High to low
+                } else {
+                    return countA - countB; // Low to high
+                }
+            });
+
+            // Update header class
+            updateHeaderSortClass('count', sortState.count);
+
+            updateActressList(sortedData);
+        }
+
+        // Update header sort class
+        function updateHeaderSortClass(column, direction) {
+            // Remove all sort classes
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+
+            // Add class to current column
+            const header = document.querySelector(`th[data-column="${column}"]`);
+            if (header) {
+                header.classList.add(direction === 'asc' ? 'sort-asc' : 'sort-desc');
+            }
+
+            currentSortColumn = column;
+        }
+
+        // Generic sort function for table headers
+        function sortByColumn(column) {
+            switch (column) {
+                case 'name':
+                    sortActressesByName();
+                    break;
+                case 'point':
+                    sortActressesByPoint();
+                    break;
+                case 'count':
+                    sortActressesByCount();
+                    break;
+                case 'date':
+                    sortActressesByDate();
+                    break;
+            }
         }
 
         // ========== SEARCH FUNCTION ==========
@@ -659,6 +772,16 @@
 
                 updateActressList(filteredData);
                 createPaginationButtons(filteredData.length);
+            });
+        }
+
+        // Setup sortable table headers
+        function setupSortableHeaders() {
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.addEventListener('click', function () {
+                    const column = this.getAttribute('data-column');
+                    sortByColumn(column);
+                });
             });
         }
 
@@ -714,6 +837,7 @@
         // ========== INIT ==========
         document.addEventListener("DOMContentLoaded", function () {
             setupSearch();
+            setupSortableHeaders();
             // loadAllData() will be called after authentication succeeds
         });
     </script>

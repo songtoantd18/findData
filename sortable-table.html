@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sortable Table</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: background 0.3s ease;
+        }
+
+        th:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        th.sortable::after {
+            content: ' ⇅';
+            opacity: 0.5;
+            font-size: 0.9em;
+        }
+
+        th.sort-asc::after {
+            content: ' ▲';
+            opacity: 1;
+        }
+
+        th.sort-desc::after {
+            content: ' ▼';
+            opacity: 1;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: linear-gradient(90deg, #f8f9ff 0%, #fff 100%);
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+        }
+
+        td {
+            padding: 15px;
+            color: #333;
+        }
+
+        td:first-child {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            th, td {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bảng Dữ Liệu Sắp Xếp</h1>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th class="sortable" data-column="name">Tên</th>
+                    <th class="sortable" data-column="score">Điểm</th>
+                    <th class="sortable" data-column="views">Lượt xem</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Data will be inserted here by JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Sample data
+        let data = [
+            { name: 'Nguyễn Văn A', score: 85, views: 1200 },
+            { name: 'Trần Thị B', score: 92, views: 850 },
+            { name: 'Lê Văn C', score: 78, views: 2100 },
+            { name: 'Phạm Thị D', score: 95, views: 1500 },
+            { name: 'Hoàng Văn E', score: 88, views: 950 },
+            { name: 'Vũ Thị F', score: 91, views: 1800 },
+            { name: 'Đặng Văn G', score: 82, views: 1100 },
+            { name: 'Bùi Thị H', score: 87, views: 1350 }
+        ];
+
+        let currentSort = {
+            column: null,
+            direction: 'asc'
+        };
+
+        // Function to render table
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.name}</td>
+                    <td>${item.score}</td>
+                    <td>${item.views.toLocaleString()}</td>
+                    <td><button class="action-btn" onclick="handleAction(${index})">Xem</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Function to sort data
+        function sortData(column) {
+            // Toggle direction if same column, otherwise set to ascending
+            if (currentSort.column === column) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = column;
+                currentSort.direction = 'asc';
+            }
+
+            // Sort the data
+            data.sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+
+                // Handle string comparison for names
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = bVal.toLowerCase();
+                }
+
+                if (currentSort.direction === 'asc') {
+                    return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+                } else {
+                    return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+                }
+            });
+
+            // Update header classes
+            document.querySelectorAll('th.sortable').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                if (th.dataset.column === column) {
+                    th.classList.add(currentSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            });
+
+            renderTable();
+        }
+
+        // Add click event listeners to sortable headers
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                sortData(th.dataset.column);
+            });
+        });
+
+        // Handle action button click
+        function handleAction(index) {
+            const item = data[index];
+            alert(`Thông tin:\nTên: ${item.name}\nĐiểm: ${item.score}\nLượt xem: ${item.views}`);
+        }
+
+        // Initial render
+        renderTable();
+    </script>
+</body>
+</html>
