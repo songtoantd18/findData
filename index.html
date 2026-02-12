@@ -87,6 +87,7 @@
                 <button id="sort" class="btn btn-info" disabled>Sort by Point ↓</button>
                 <button id="sortByName" class="btn btn-warning" disabled>Sort by Name ↑</button>
                 <button id="sortByDate" class="btn btn-primary" disabled>Sort by Date ↓</button>
+                <button id="sortRandom" class="btn btn-dark" disabled>Sort Random 🔀</button>
                 <input type="text" id="searchByNameAndPoint" class="form-control d-inline-block w-auto"
                     placeholder="Search by name and point" disabled>
             </div>
@@ -119,11 +120,7 @@
     <script>
         // ========== DEMO DATA ==========
         const demo = [
-            { name: "Sasaki Saki", point: 0, id: "2" },
-            { name: "Asano Kokoro", point: 0, id: "3" },
-            { name: "Yui Hatano", point: 9, id: "4" },
-            { name: "Ai Uehara", point: 10, id: "5" },
-            { name: "Rion", point: 8, id: "6" }
+
         ];
 
         // ========== FIREBASE CONFIG ==========
@@ -162,6 +159,7 @@
             document.getElementById("sort").disabled = false;
             document.getElementById("sortByName").disabled = false;
             document.getElementById("sortByDate").disabled = false;
+            document.getElementById("sortRandom").disabled = false;
             document.getElementById("searchByNameAndPoint").disabled = false;
 
             // Only enable import button if it exists
@@ -490,7 +488,7 @@
 
                 row.innerHTML = `
                     <td>${actressIndex}</td>
-                    <td>${actress.name}</td>
+                    <td>${actress.point}</td>
                     <td><span class="redPoint">${actress.point}</span></td>
                     <td>
                         <button class="btn btn-sm btn-primary edit-btn">Edit</button>
@@ -613,6 +611,15 @@
             updateActressList(sortedData);
         }
 
+        function sortActressesRandomly() {
+            // Fisher-Yates shuffle
+            for (let i = dataValue.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [dataValue[i], dataValue[j]] = [dataValue[j], dataValue[i]];
+            }
+            updateActressList(dataValue);
+        }
+
         // ========== SEARCH FUNCTION ==========
         function setupSearch() {
             const fieldSearch = ['name', 'point'];
@@ -633,8 +640,8 @@
 
         // ========== EVENT LISTENERS ==========
         document.getElementById("saveButton").addEventListener("click", function () {
-            var actressName = document.getElementById("actressName").value;
-            var actressPoint = document.getElementById("point").value;
+            var actressName = document.getElementById("actressName").value.trim();
+            var actressPoint = document.getElementById("point").value.trim();
 
             if (!actressName || !actressPoint) {
                 alert("Vui lòng nhập đầy đủ thông tin!");
@@ -666,6 +673,10 @@
 
         document.getElementById("sortByDate").addEventListener("click", function () {
             sortActressesByDate();
+        });
+
+        document.getElementById("sortRandom").addEventListener("click", function () {
+            sortActressesRandomly();
         });
 
         // IMPORT DEMO DATA BUTTON (only if exists)
